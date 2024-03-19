@@ -26,7 +26,7 @@ def calculate_correlation(stock_returns, index_returns):
     return correlation
 
 # Function to calculate expected stock price change
-def calculate_expected_change(closing_price, beta, volatility, correlation, index_expectation):
+def calculate_expected_change(closing_price, beta, volatility, correlation, index_expectation, index_data):
     expected_change = beta * (index_expectation / index_data['Adj Close'].iloc[-1] - 1) + (volatility * correlation)
     return expected_change
 
@@ -80,7 +80,7 @@ def main():
 
                 # Calculate expected change in stock price
                 closing_price = stock_data['Adj Close'].iloc[-1]
-                expected_change = calculate_expected_change(closing_price, beta, volatility, correlation, nifty_expectation)
+                expected_change = calculate_expected_change(closing_price, beta, volatility, correlation, nifty_expectation, index_data)
                 st.write(f'Expected Change in {ticker} Price: {expected_change}')
 
                 # Plot stock prices
