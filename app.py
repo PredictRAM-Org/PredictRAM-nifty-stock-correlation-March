@@ -22,7 +22,7 @@ def calculate_volatility(returns):
 
 # Function to calculate correlation
 def calculate_correlation(stock_returns, index_returns):
-    correlation = np.corrcoef(stock_returns, index_returns)[0, 1]
+    correlation = np.corrcoef(stock_returns.values, index_returns.values)[0, 1]
     return correlation
 
 # Function to calculate expected stock price change
@@ -81,7 +81,7 @@ def main():
                 st.write(f'Volatility: {volatility}')
 
                 # Calculate correlation with index
-                correlation = calculate_correlation(stock_data['Returns'].iloc[1:], index_data['Returns'].iloc[1:])
+                correlation = calculate_correlation(stock_data['Returns'].iloc[1:], index_data['Returns'].iloc[:-1])
                 st.write(f'Correlation with Nifty 50 Index: {correlation}')
 
                 # Calculate expected change in stock price
