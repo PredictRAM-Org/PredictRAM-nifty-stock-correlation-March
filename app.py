@@ -25,10 +25,12 @@ def calculate_correlation(stock_returns, index_returns):
     correlation = np.corrcoef(stock_returns, index_returns)[0, 1]
     return correlation
 
-# Function to calculate expected stock price change
-def calculate_expected_change(closing_price, beta, volatility, correlation, index_expectation, index_data):
-    expected_change = beta * (index_expectation / index_data['Adj Close'].iloc[-1] - 1) + (volatility * correlation)
-    return expected_change
+# Function to calculate expected stock price change relative to index
+def calculate_expected_change_relative_to_index(closing_price, beta, volatility, correlation, index_expectation, index_data):
+    index_price = index_data['Adj Close'].iloc[-1]
+    index_change = (index_expectation / index_price - 1)
+    stock_change = beta * index_change + volatility * correlation
+    return closing_price * stock_change
 
 # Main function
 def main():
@@ -86,10 +88,10 @@ def main():
                 correlation = calculate_correlation(stock_returns, index_returns)
                 st.write(f'Correlation with Nifty 50 Index: {correlation:.2f}')
 
-                # Calculate expected change in stock price
+                # Calculate expected change in stock price relative to index
                 closing_price = stock_data['Adj Close'].iloc[-1]
-                expected_change = calculate_expected_change(closing_price, beta, volatility, correlation, nifty_expectation, index_data)
-                st.write(f'Expected Change in {ticker} Price: {expected_change:.2f}%')
+                expected_change = calculate_expected_change_relative_to_index(closing_price, beta, volatility, correlation, nifty_expectation, index_data)
+                st.write(f'Expected Change in {ticker} Price relative to ^NSEI: {expected_change:.2f}%')
 
                 # Plot stock prices
                 plt.figure(figsize=(10, 6))
