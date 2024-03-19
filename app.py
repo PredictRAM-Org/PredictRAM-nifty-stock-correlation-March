@@ -27,7 +27,7 @@ def calculate_correlation(stock_returns, index_returns):
 
 # Function to calculate expected stock price change
 def calculate_expected_change(closing_price, beta, volatility, correlation, index_expectation):
-    expected_change = beta * (index_expectation - closing_price) + (volatility * correlation)
+    expected_change = beta * (index_expectation / index_data['Adj Close'].iloc[-1] - 1) + (volatility * correlation)
     return expected_change
 
 # Main function
@@ -91,6 +91,15 @@ def main():
                 plt.title(f'{ticker} Closing Prices')
                 plt.legend()
                 st.pyplot(plt)
+
+            # Display correlation matrix
+            st.subheader('Correlation Matrix')
+            correlation_matrix = pd.DataFrame(index=portfolio.keys(), columns=['^NSEI'])
+            for ticker, _ in portfolio.items():
+                stock_data = fetch_stock_data(ticker)
+                stock_returns = stock_data['Adj Close'].pct_change().dropna()
+                correlation_matrix.loc[ticker, '^NSEI'] = calculate_correlation(stock_returns, index_data['Returns'].iloc[1:])
+            st.write(correlation_matrix)
 
 if __name__ == "__main__":
     main()
