@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Function to fetch stock data
 def fetch_stock_data(ticker):
@@ -24,6 +25,11 @@ def calculate_correlation(stock_returns, index_returns):
     correlation = np.corrcoef(stock_returns, index_returns)[0, 1]
     return correlation
 
+# Function to calculate expected stock price change
+def calculate_expected_change(closing_price, beta, volatility, correlation, index_expectation):
+    expected_change = beta * (index_expectation - closing_price) + (volatility * correlation)
+    return expected_change
+
 # Main function
 def main():
     st.title('Stock Portfolio Analysis')
@@ -44,6 +50,9 @@ def main():
 
             # Calculate index returns
             index_data['Returns'] = index_data['Adj Close'].pct_change()
+
+            # User input for Nifty next day closing expectation
+            nifty_expectation = st.number_input('Enter your expectation for the next day closing of Nifty:', step=0.01)
 
             # Display portfolio
             st.subheader('Portfolio Summary')
@@ -68,6 +77,20 @@ def main():
                 # Calculate correlation with index
                 correlation = calculate_correlation(stock_data['Returns'].iloc[1:], index_data['Returns'].iloc[1:])
                 st.write(f'Correlation with Nifty 50 Index: {correlation}')
+
+                # Calculate expected change in stock price
+                closing_price = stock_data['Adj Close'].iloc[-1]
+                expected_change = calculate_expected_change(closing_price, beta, volatility, correlation, nifty_expectation)
+                st.write(f'Expected Change in {ticker} Price: {expected_change}')
+
+                # Plot stock prices
+                plt.figure(figsize=(10, 6))
+                plt.plot(stock_data['Adj Close'], label=ticker)
+                plt.xlabel('Date')
+                plt.ylabel('Price')
+                plt.title(f'{ticker} Closing Prices')
+                plt.legend()
+                st.pyplot(plt)
 
 if __name__ == "__main__":
     main()
