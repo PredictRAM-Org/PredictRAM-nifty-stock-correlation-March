@@ -73,7 +73,7 @@ def main():
                 stock_data = fetch_stock_data(ticker)
 
                 # Calculate stock returns
-                stock_data['Returns'] = stock_data['Adj Close'].pct_change()
+                stock_data['Returns'] = stock_data['Adj Close'].pct_change().fillna(0)  # Fill NaN with 0
 
                 # Calculate beta
                 beta = calculate_beta(stock_data, index_data)
