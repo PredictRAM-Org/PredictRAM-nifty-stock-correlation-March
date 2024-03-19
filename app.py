@@ -34,6 +34,21 @@ def calculate_expected_change(closing_price, beta, volatility, correlation, inde
 def main():
     st.title('Stock Portfolio Analysis')
 
+    # Fetch Nifty 50 index data
+    index_data = yf.download('^NSEI', start="2023-03-19", end="2024-03-19")
+    index_price = index_data['Adj Close'].iloc[-1]
+
+    # Display Nifty 50 index current price
+    st.subheader('Nifty 50 Index')
+    st.write(f'Current Price: {index_price}')
+
+    # User input for Nifty next day closing expectation
+    nifty_expectation = st.number_input('Enter your expectation for the next day closing of Nifty:', step=0.01)
+
+    # Calculate expected percentage change of Nifty 50 index
+    expected_nifty_change = (nifty_expectation / index_price - 1) * 100
+    st.write(f'Expected Percentage Change in Nifty 50 Index: {expected_nifty_change:.2f}%')
+
     # User input for stock tickers and quantities
     st.subheader('Enter Stock Portfolio')
     portfolio = {}
@@ -45,15 +60,6 @@ def main():
                 portfolio[ticker.strip()] = quantity
 
         if portfolio:
-            # Fetch Nifty 50 index data
-            index_data = yf.download('^NSEI', start="2023-03-19", end="2024-03-19")
-
-            # Calculate index returns
-            index_data['Returns'] = index_data['Adj Close'].pct_change()
-
-            # User input for Nifty next day closing expectation
-            nifty_expectation = st.number_input('Enter your expectation for the next day closing of Nifty:', step=0.01)
-
             # Display portfolio
             st.subheader('Portfolio Summary')
             st.write(pd.DataFrame.from_dict(portfolio, orient='index', columns=['Quantity']))
@@ -81,7 +87,7 @@ def main():
                 # Calculate expected change in stock price
                 closing_price = stock_data['Adj Close'].iloc[-1]
                 expected_change = calculate_expected_change(closing_price, beta, volatility, correlation, nifty_expectation, index_data)
-                st.write(f'Expected Change in {ticker} Price: {expected_change}')
+                st.write(f'Expected Change in {ticker} Price: {expected_change:.2f}%')
 
                 # Plot stock prices
                 plt.figure(figsize=(10, 6))
@@ -91,15 +97,6 @@ def main():
                 plt.title(f'{ticker} Closing Prices')
                 plt.legend()
                 st.pyplot(plt)
-
-            # Display correlation matrix
-            st.subheader('Correlation Matrix')
-            correlation_matrix = pd.DataFrame(index=portfolio.keys(), columns=['^NSEI'])
-            for ticker, _ in portfolio.items():
-                stock_data = fetch_stock_data(ticker)
-                stock_returns = stock_data['Adj Close'].pct_change().dropna()
-                correlation_matrix.loc[ticker, '^NSEI'] = calculate_correlation(stock_returns, index_data['Returns'].iloc[1:])
-            st.write(correlation_matrix)
 
 if __name__ == "__main__":
     main()
