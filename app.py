@@ -22,7 +22,7 @@ def calculate_volatility(returns):
 
 # Function to calculate correlation
 def calculate_correlation(stock_returns, index_returns):
-    correlation = np.corrcoef(stock_returns.values, index_returns.values)[0, 1]
+    correlation = np.corrcoef(stock_returns, index_returns)[0, 1]
     return correlation
 
 # Function to calculate expected stock price change
@@ -36,17 +36,18 @@ def main():
 
     # Fetch Nifty 50 index data
     index_data = yf.download('^NSEI', start="2023-03-19", end="2024-03-19")
-    index_price = index_data['Adj Close'].iloc[-1]
+    index_data['Returns'] = index_data['Adj Close'].pct_change()
 
     # Display Nifty 50 index current price
     st.subheader('Nifty 50 Index')
-    st.write(f'Current Price: {index_price}')
+    st.write(f'Current Price: {index_data["Adj Close"].iloc[-1]}')
 
     # User input for Nifty next day closing expectation
     nifty_expectation = st.number_input('Enter your expectation for the next day closing of Nifty:', step=0.01)
 
     # Calculate expected percentage change of Nifty 50 index
-    expected_nifty_change = (nifty_expectation / index_price - 1) * 100
+    index_returns = index_data['Returns'].iloc[1:]
+    expected_nifty_change = (nifty_expectation / index_data['Adj Close'].iloc[-1] - 1) * 100
     st.write(f'Expected Percentage Change in Nifty 50 Index: {expected_nifty_change:.2f}%')
 
     # User input for stock tickers and quantities
@@ -81,8 +82,9 @@ def main():
                 st.write(f'Volatility: {volatility}')
 
                 # Calculate correlation with index
-                correlation = calculate_correlation(stock_data['Returns'].iloc[1:], index_data['Returns'].iloc[:-1])
-                st.write(f'Correlation with Nifty 50 Index: {correlation}')
+                stock_returns = stock_data['Returns'].iloc[1:]
+                correlation = calculate_correlation(stock_returns, index_returns)
+                st.write(f'Correlation with Nifty 50 Index: {correlation:.2f}')
 
                 # Calculate expected change in stock price
                 closing_price = stock_data['Adj Close'].iloc[-1]
